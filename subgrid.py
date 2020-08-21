@@ -3,6 +3,7 @@ class Subgrid():
     
     def __init__(self):
         self.content = []
+        self.complete = False
 
 
     def populate(self, r1, r2, r3, location):

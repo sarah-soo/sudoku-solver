@@ -1,19 +1,24 @@
 from subgrid import Subgrid
+from puzzle import Puzzle
 
-row1 = [1,2,3,4,5,6,7,8,9]
-row2 = [4,5,6,7,8,9,1,2,3]
-row3 = [7,8,9,1,2,3,4,5,6]
+p = Puzzle()
+
+p.load_puzzle("C:\\repos\\sudoku-solver\\test_puzzle_1.txt")
 
 tl = Subgrid()
 tm = Subgrid()
 tr = Subgrid()
 
-tl.populate(row1, row2, row3, "tl")
-tm.populate(row1, row2, row3, "tm")
-tr.populate(row1, row2, row3, "tr")
+# make this shorter
+tl.populate(p.row[0].content, p.row[1].content, p.row[2].content, "tl")
+tm.populate(p.row[0].content, p.row[1].content, p.row[2].content, "tm")
+tr.populate(p.row[0].content, p.row[1].content, p.row[2].content, "tr")
 
 tl.check_if_complete()
 tm.check_if_complete()
 tr.check_if_complete()
 
 print(tl.complete, tm.complete, tr.complete)
+
+# ideas:
+#   - create superclass for methods like "check_if_complete"
