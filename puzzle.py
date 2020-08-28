@@ -1,24 +1,16 @@
-from row import Row
+import numpy as np
 
 class Puzzle:
-    def __init__(self):
-        self.row = []
-
     def load_puzzle(self, filepath):
-        print("Loading puzzle...")
         puzzle_file = open(filepath, "r")
 
-        puzzle = puzzle_file.read().split('\n')
+        puzzle = puzzle_file.read().split("\n")
 
-        print("Initialising rows...")
+        p_array = np.empty([3, 9])
         i = 0
-        while (i < 9):
-            self.row.append(Row())
+        while (i < len(puzzle)):
+            temp_list = list(map(int, puzzle[i].split(' ')))
+            p_array[i,:] = temp_list
             i += 1
 
-        print("Populating rows...")
-        self.row[0].populate(list(map(int, puzzle[0].split(' '))))
-        self.row[1].populate(list(map(int, puzzle[1].split(' '))))
-        self.row[2].populate(list(map(int, puzzle[2].split(' '))))
-
-        return self.row
+        return p_array
