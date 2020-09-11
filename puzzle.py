@@ -6,7 +6,7 @@ class Puzzle:
 
         puzzle = puzzle_file.read().split("\n")
 
-        p_array = np.empty([3, 9])
+        p_array = np.empty([9, 9])
         i = 0
         while (i < len(puzzle)):
             temp_list = list(map(int, puzzle[i].split(' ')))
