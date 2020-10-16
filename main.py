@@ -9,23 +9,16 @@ def find_least_missing(container):
     n = 10
     lowest = 10
     count = 0
-    i = 0
-    j = 0
 
-    while (i < 9):
-        while (j < 9):
-            if container == "row":
-                if puzzle[i,j] == 0:
-                    count += 1
-            elif container == "column":
-                if puzzle[j,i] == 0:
-                    count += 1
-            j += 1
+    for i in range(9):
+        for j in range(9):
+            if container == "row" and puzzle[i,j] == 0:
+                count += 1
+            elif container == "column" and puzzle[j,i] == 0:
+                count += 1
         if (count != 0) and (count < lowest):
             lowest = count
             n = i
-        i += 1
-        j = 0
         count = 0
 
     if not lowest == 10:
@@ -37,22 +30,16 @@ def find_missing_values(n, container):
     """
     Finds the numbers missing from a specified container with array index n.
     """
-    i = 0
-    missing = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    missing = [x for x in range(1,10)]
 
-    while (i < 9):
-        j = 1
-        while (j <= 9):
-            if container == "row":
-                if puzzle[n,i] == j:
-                    missing.remove(j)
-                    break
-            elif container == "column":
-                if puzzle[i,n] == j:
-                    missing.remove(j)
-                    break
-            j += 1
-        i += 1
+    for i in range(9):
+        for j in range(1,10):
+            if container == "row" and puzzle[n,i] == j:
+                missing.remove(j)
+                break
+            elif container == "column" and puzzle[i,n] == j:
+                missing.remove(j)
+                break
 
     return missing
 
@@ -60,25 +47,24 @@ def solve(n, missing, container):
     """
     Solves one number in speficied container with array index n.
     """
+    # use recursion
+
     print("Solving " + container + " with " + str(len(missing)) + " missing numbers(s).")
 
-    c_c = find_corresponding_coord(n, container)
+    cc = find_corresponding_coord(n, container)
     
-    i = 0
-
-    while i < len(missing):
-        if not already_exists(c_c, missing[i], container):
+    for i in range(len(missing)):
+        if not already_exists(cc, missing[i], container):
             if container == "row":
-                puzzle[n,c_c] = missing[i]
+                puzzle[n,cc] = missing[i]
             elif container == "column":
-                puzzle[c_c,n] = missing[i]
+                puzzle[cc,n] = missing[i]
             m = i
-        i += 1
 
     if container == "row":
-        print_solved(n, c_c, m)
+        print_solved(n, cc, m)
     elif container == "column":
-        print_solved(c_c, n, m)
+        print_solved(cc, n, m)
 
 def find_corresponding_coord(n, container):
     """
@@ -97,7 +83,7 @@ def find_corresponding_coord(n, container):
     return i
 
 
-def already_exists(c_c, missing, container):
+def already_exists(cc, missing, container):
     """
     Checks to see if the missing number from the container (row/column) exists
     in the corresponding container (column/row).
@@ -105,16 +91,14 @@ def already_exists(c_c, missing, container):
     i = 0
     
     if container == "row":
-        while (i < 9):
-            if puzzle[i,c_c] == missing:
+        for i in range(9):
+            if puzzle[i,cc] == missing:
                 return True
-            i += 1
         return False
     elif container == "column":
-        while (i < 9):
-            if puzzle[c_c,i] == missing:
+        for i in range(9):
+            if puzzle[cc,i] == missing:
                 return True
-            i += 1
         return False
 
 def print_solved(row, col, m):
@@ -125,7 +109,7 @@ def print_solved(row, col, m):
 
 print("Loading puzzle...")
 p = Puzzle()
-puzzle = p.load_puzzle("C:/repos/sudoku-solver/real_1.txt")
+puzzle = p.load_puzzle("C:/repos/sudoku-solver/test_missing_3r_3c.txt")
 
 print(puzzle)
 
@@ -144,7 +128,6 @@ while row_n != 10 or column_n != 10:
         solve(column_n, missing, "column")
         row_n, r_lowest = find_least_missing("row")
         column_n, c_lowest = find_least_missing("column")
-   
 
 print(puzzle)
 
