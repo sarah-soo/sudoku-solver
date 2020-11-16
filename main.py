@@ -1,6 +1,6 @@
 from puzzle import Puzzle
 from grid_dict import grids
-import numpy as numpy
+import numpy as np
 
 def find_value_in_grid(coord, missing):
     """
@@ -122,12 +122,13 @@ def solve(n, container, missing):
     missing: array of values missing from specified container
     container: the container type
     """
-    print(str(step) + ". Solving " + container + " " + str(n + 1) + " with " + str(len(missing)) + " missing number(s).")
+    # print(str(step) + ". Solving " + container + " " + str(n + 1) + " with " + str(len(missing)) + " missing number(s).")
 
     coords = []
     for _ in range(len(missing)):
         coords.append(find_empty_coord(n, container, coords))
 
+    # method 1: check if one value can be in multiple coordinates
     for value in missing:
         valid_coords = get_valid_coords(coords, value)
 
@@ -154,13 +155,32 @@ def solve(n, container, missing):
             if common_row_or_col(valid_coords) == "row":
                 if not [grid_n, "row", valid_coords[0][0], value] in pencil:
                     pencil.append([grid_n, "row", valid_coords[0][0], value])
-                    # print("Added pencil mark:", pencil[-1])
                     return True
             elif common_row_or_col(valid_coords) == "col":
                 if not [grid_n, "col", valid_coords[0][1], value] in pencil:
                     pencil.append([grid_n, "col", valid_coords[0][1], value])
-                    # print("Added pencil mark:", pencil[-1])
                     return True
+
+    # method 2: check if one coordinate has multiple value options
+    for coord in coords:
+        valid_values = get_valid_values(coord, missing)
+
+        if len(valid_values) == 1:
+            value = valid_values[0]
+
+            puzzle[coord[0], coord[1]] = value
+            print_solved(coord, value)
+
+            grid_n = which_grid(coord)
+            for mark in pencil:
+                if mark[0] == grid_n and mark[1] == "row" and mark[2] == coord[0] and mark[3] == value:
+                    pencil.remove(mark)
+                    break
+                elif mark[0] == grid_n and mark[1] == "col" and mark[2] == coord[1] and mark[3] == value:
+                    pencil.remove(mark)
+                    break
+
+            return True
 
     return False
 
@@ -199,8 +219,8 @@ def get_valid_coords(coords, missing_val):
     """
     Returns a list of valid coordinates for the missing value.
 
-    coords: list of coordinates with no value
-    missing_val: missing value
+    coords: a list of coordinates
+    missing_val: a missing value
     """
     valid_coords = []
 
@@ -233,6 +253,22 @@ def already_exists(coord, missing_val):
             return True
 
     return False
+
+def get_valid_values(coord, missing):
+    """
+    Returns a list of valid missing values for the coordinate.
+
+    coords: a coordinate
+    missing: a list of missing values
+    """
+
+    valid_values = []
+
+    for value in missing:
+        if not already_exists(coord, value):
+            valid_values.append(value)
+
+    return valid_values
 
 def common_row_or_col(coords):
     """
@@ -273,7 +309,7 @@ def print_solved(coord, missing_val):
 
 print("Loading puzzle...")
 p = Puzzle()
-puzzle = p.load_puzzle("C:/repos/sudoku-solver/real_4.txt")
+puzzle = p.load_puzzle("C:/repos/sudoku-solver/medium_3.txt")
 
 step = 1
 unsolved_row, unsolved_col, unsolved_grid = [], [], []
@@ -324,3 +360,66 @@ else:
     print("Could not solve.\nCurrent state:")
     print(puzzle)
     print("Pencil marks:", pencil)
+
+# difficulties:
+# easy: <35 missing
+# medium: 36 - 55 missing
+# hard: > 55 missing
+
+# medium_3:
+# *** Solved: '8' goes in row 9, column 7. ***
+# *** Solved: '1' goes in row 8, column 7. ***
+# *** Solved: '2' goes in row 5, column 8. ***
+# *** Solved: '9' goes in row 2, column 8. ***
+# *** Solved: '2' goes in row 3, column 7. ***
+# *** Solved: '6' goes in row 2, column 9. ***
+# *** Solved: '4' goes in row 1, column 9. ***
+# *** Solved: '9' goes in row 1, column 3. ***
+# *** Solved: '2' goes in row 1, column 2. ***
+# *** Solved: '9' goes in row 8, column 1. ***
+# *** Solved: '5' goes in row 8, column 3. ***
+# *** Solved: '4' goes in row 9, column 3. ***
+# *** Solved: '2' goes in row 7, column 3. ***
+# *** Solved: '7' goes in row 8, column 2. ***
+# *** Solved: '6' goes in row 8, column 5. ***
+# *** Solved: '8' goes in row 8, column 6. ***
+# *** Solved: '6' goes in row 7, column 2. ***
+# *** Solved: '8' goes in row 7, column 1. ***
+# *** Solved: '7' goes in row 1, column 6. ***
+# *** Solved: '2' goes in row 4, column 1. ***
+# *** Solved: '8' goes in row 2, column 2. ***
+# *** Solved: '8' goes in row 1, column 5. ***
+# *** Solved: '1' goes in row 1, column 4. ***
+# *** Solved: '1' goes in row 7, column 5. ***
+# *** Solved: '8' goes in row 6, column 4. ***
+# *** Solved: '6' goes in row 5, column 4. ***
+# *** Solved: '6' goes in row 6, column 7. ***
+# *** Solved: '9' goes in row 4, column 4. ***
+# *** Solved: '7' goes in row 9, column 4. ***
+# *** Solved: '5' goes in row 9, column 5. ***
+# *** Solved: '5' goes in row 2, column 4. ***
+# *** Solved: '9' goes in row 6, column 9. ***
+# *** Solved: '1' goes in row 5, column 9. ***
+# *** Solved: '5' goes in row 5, column 6. ***
+# Could not solve.
+# Current state:
+# [[6. 2. 9. 1. 8. 7. 5. 3. 4.]
+#  [0. 8. 0. 5. 0. 2. 7. 9. 6.]
+#  [5. 0. 7. 0. 9. 6. 2. 1. 8.]
+#  [2. 0. 6. 9. 0. 1. 0. 8. 0.]
+#  [0. 9. 8. 6. 0. 5. 0. 2. 1.]
+#  [0. 0. 0. 8. 2. 0. 6. 0. 9.]
+#  [8. 6. 2. 0. 1. 0. 9. 0. 0.]
+#  [9. 7. 5. 2. 6. 8. 1. 4. 3.]
+#  [3. 1. 4. 7. 5. 9. 8. 6. 2.]]
+# Pencil marks: [[8, 'row', 6, 5],
+#               [8, 'row', 6, 7],
+#               [5, 'col', 6, 3],
+#               [5, 'col', 6, 4],
+#               [0, 'row', 1, 1],
+#               [3, 'col', 0, 7],
+#               [3, 'col', 1, 5],
+#               [7, 'row', 6, 3],
+#               [7, 'row', 6, 4],
+#               [4, 'col', 4, 7],
+#               [3, 'row', 5, 1]]
