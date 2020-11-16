@@ -1,7 +1,8 @@
 from puzzle import Puzzle
+from grid_dict import grids
 import numpy as np
 
-def find_value_in_grid(i, j, n):
+def grid_if_equal(i, j, n):
     if i in range(3):
         x_modifier = 0
     elif i in range(3,6):
@@ -21,14 +22,30 @@ def find_value_in_grid(i, j, n):
     else:
         return False
 
-def get_list():
-    row_n, r_lowest = find_least_missing("row")
-    column_n, c_lowest = find_least_missing("column")
-    grid_n, g_lowest = find_least_missing("grid")
+def find_value_in_grid(coord, missing):    
+    counter = 0
+    for grid in grids:
+        if coord[0] in grid['x'] and coord[1] in grid['y']:
+            break
+        counter += 1
 
+    # print("Searching for " + str(missing) + " in grid " + str(counter))
+
+    for i in grids[counter]['x']:
+        for j in grids[counter]['y']:
+            if puzzle[i, j] == missing:
+                return True
+
+    return False
+
+def get_list(unsolved_row, unsolved_col, unsolved_grid):
+    row_n, r_lowest = find_least_missing("row", unsolved_row)
+    column_n, c_lowest = find_least_missing("column", unsolved_col)
+    grid_n, g_lowest = find_least_missing("grid", unsolved_grid)
+    
     return row_n, column_n, grid_n, [r_lowest, c_lowest, g_lowest]
 
-def find_least_missing(container):
+def find_least_missing(container, unsolved):
     """
     Finds the specified container with the least missing numbers,
     but is still incomplete.
@@ -43,18 +60,15 @@ def find_least_missing(container):
                 count += 1
             elif container == "column" and puzzle[j,i] == 0:
                 count += 1
-            elif container == "grid" and find_value_in_grid(i, j, 0):
+            elif container == "grid" and grid_if_equal(i, j, 0):
                 count += 1
 
-        if (count != 0) and (count < lowest):
+        if (count != 0) and (count < lowest) and (i not in unsolved):
             lowest = count
             n = i
-
+        
         count = 0
-
-    # if not lowest == 10:
-    #     print("Found " + container + " with " + str(lowest) + " missing number(s)." )
-
+        
     return n, lowest
 
 def find_missing_values(n, container):
@@ -71,7 +85,7 @@ def find_missing_values(n, container):
             elif container == "column" and puzzle[i,n] == j:
                 missing.remove(j)
                 break
-            elif container == "grid"and find_value_in_grid(n, i, j):
+            elif container == "grid"and grid_if_equal(n, i, j):
                 missing.remove(j)
                 break
 
@@ -81,14 +95,15 @@ def solve(n, missing, container):
     """
     Solves one number in speficied container with array index n.
     """
-    print("Solving " + container + " with " + str(len(missing)) + " missing numbers(s).")
+    print("Solving " + container + " " + str(n + 1) + " with " + str(len(missing)) + " missing number(s).")
 
     coord = find_coord(n, container)
 
     unique = False
     m = -1
     for i in range(len(missing)):
-        if not already_exists(coord, missing[i], container):
+        # print("Searching for " + str(missing[i]) + "...")
+        if not already_exists(n, coord, missing[i], container):
             if m == -1:
                 unique = True
                 m = i
@@ -99,12 +114,17 @@ def solve(n, missing, container):
         if container == "row":
             puzzle[n,coord] = missing[m]
             print_solved(n, coord, m)
+            return True
         elif container == "column":
             puzzle[coord,n] = missing[m]
             print_solved(coord, n, m)
+            return True
         elif container == "grid":
             puzzle[coord[0],coord[1]] = missing[m]
             print_solved(coord[0], coord[1], m)
+            return True
+
+    return False
 
 def find_coord(n, container):
     """
@@ -137,7 +157,7 @@ def find_coord(n, container):
                 i += 1
         return i
 
-def already_exists(coord, missing, container):
+def already_exists(n, coord, missing, container):
     """
     Checks to see if the missing number from the container (row/column) exists
     in the corresponding container (column/row).
@@ -146,11 +166,21 @@ def already_exists(coord, missing, container):
     if container == "row":
         for i in range(9):
             if puzzle[i,coord] == missing:
+                # print("Found " + str(missing) + " in (" + str(i) + ", " + str(coord) + ")")
                 return True
+    
+        if find_value_in_grid([n, coord], missing):
+            return True
+
     elif container == "column":
         for i in range(9):
             if puzzle[coord,i] == missing:
+                # print("Found " + str(missing) + " in (" + str(coord) + ", " + str(i) + ")")
                 return True
+
+        if find_value_in_grid([coord, n], missing):
+            return True
+    
     elif container == "grid":
         for i in range(9):
             if puzzle[coord[0],i] == missing:
@@ -170,45 +200,44 @@ print("Loading puzzle...")
 p = Puzzle()
 puzzle = p.load_puzzle("C:/repos/sudoku-solver/real_1.txt")
 
-row_n, column_n, grid_n, n_missing = get_list()
+unsolved_row, unsolved_col, unsolved_grid = [], [], []
+
+row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
 
 # where grid is indexed as follows:
-# |1|2|3|
-# |4|5|6|
-# |7|8|9|
+# |0|1|2|
+# |3|4|5|
+# |6|7|8|
 
 while row_n != 10 or column_n != 10 or grid_n != 10:
     while n_missing.index(min(n_missing)) == 0 and row_n != 10:
         missing = find_missing_values(row_n, "row")
-        solve(row_n, missing, "row")
-        
-        row_n, column_n, grid_n, n_missing = get_list()
+        if solve(row_n, missing, "row"):
+            if row_n in unsolved_row:
+                unsolved_row.remove(row_n)
+        else:
+            unsolved_row.append(row_n)
+
+        row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
 
     while n_missing.index(min(n_missing)) == 1 and column_n != 10:
         missing = find_missing_values(column_n, "column")
-        solve(column_n, missing, "column")
+        if solve(column_n, missing, "column"):
+            if column_n in unsolved_col:
+                unsolved_col.remove(column_n)
+        else:
+            unsolved_col.append(column_n)
 
-        row_n, column_n, grid_n, n_missing = get_list()
+        row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
 
     while n_missing.index(min(n_missing)) == 2 and grid_n != 10:
         missing = find_missing_values(grid_n, "grid")
-        solve(grid_n, missing, "grid")
-
-        row_n, column_n, grid_n, n_missing = get_list()
+        if solve(grid_n, missing, "grid"):
+            if grid_n in unsolved_grid:
+                unsolved_grid.remove(grid_n)
+        else:
+            unsolved_grid.append(grid_n)
+    
+        row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
 
 print(puzzle)
-
-# last run (with real_1):
-# Solving row with 1 missing numbers(s).
-# Solved: '2' goes in row 7, column 8.
-# Solving row with 1 missing numbers(s).
-# Solved: '5' goes in row 8, column 5.
-# Solving row with 2 missing numbers(s).
-# Solved: '8' goes in row 2, column 1.
-# Solving row with 1 missing numbers(s).
-# Solved: '1' goes in row 2, column 7.
-# Solving grid with 1 missing numbers(s).
-# Solved: '4' goes in row 1, column 2.
-# Solving column with 2 missing numbers(s).
-# Solving column with 2 missing numbers(s).
-# etc.
