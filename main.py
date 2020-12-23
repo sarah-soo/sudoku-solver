@@ -315,7 +315,8 @@ step = 1
 unsolved_row, unsolved_col, unsolved_grid = [], [], []
 pencil = []
 
-row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
+row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col,
+                                                unsolved_grid)
 
 # where grid is indexed as follows:
 # |0|1|2|
@@ -331,7 +332,9 @@ while row_n != 10 or column_n != 10 or grid_n != 10:
             unsolved_row.append(row_n)
 
         step += 1
-        row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
+        row_n, column_n, grid_n, n_missing = get_list(unsolved_row,
+                                                        unsolved_col,
+                                                        unsolved_grid)
 
     while n_missing.index(min(n_missing)) == 1 and column_n != 10:
         missing = find_missing_values(column_n, "column")
@@ -341,7 +344,9 @@ while row_n != 10 or column_n != 10 or grid_n != 10:
             unsolved_col.append(column_n)
 
         step += 1
-        row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
+        row_n, column_n, grid_n, n_missing = get_list(unsolved_row,
+                                                        unsolved_col,
+                                                        unsolved_grid)
 
     while n_missing.index(min(n_missing)) == 2 and grid_n != 10:
         missing = find_missing_values(grid_n, "grid")
@@ -351,7 +356,9 @@ while row_n != 10 or column_n != 10 or grid_n != 10:
             unsolved_grid.append(grid_n)
     
         step += 1
-        row_n, column_n, grid_n, n_missing = get_list(unsolved_row, unsolved_col, unsolved_grid)
+        row_n, column_n, grid_n, n_missing = get_list(unsolved_row,
+                                                        unsolved_col,
+                                                        unsolved_grid)
 
 if 0 not in puzzle:
     print(puzzle)
